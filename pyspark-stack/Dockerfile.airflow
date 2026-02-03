@@ -1,0 +1,90 @@
+FROM apache/airflow:2.7.2-python3.8
+
+USER root
+
+# 1. Dependências de sistema e Java
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+      build-essential gcc g++ python3-dev \
+      libkrb5-dev krb5-user libsasl2-dev libldap2-dev \
+      libssl-dev libxml2-dev libxslt1-dev zlib1g-dev \
+      libffi-dev \
+      unixodbc-dev freetds-dev \
+      curl wget ca-certificates vim \
+      procps \
+      openjdk-11-jdk && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# 2. Driver ODBC oficial da Microsoft (Debian 11)
+RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - && \
+    curl https://packages.microsoft.com/config/debian/11/prod.list \
+        > /etc/apt/sources.list.d/mssql-release.list && \
+    apt-get update && \
+    ACCEPT_EULA=Y apt-get install -y msodbcsql17 && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# 3. Configurações de Ambiente (Java e Spark)
+ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+ENV SPARK_HOME=/opt/spark 
+ENV PATH="${SPARK_HOME}/bin:${PATH}"
+
+# [Opcional] Descomente as linhas abaixo apenas quando for subir para o GitHub
+# ENV SPARK_VERSION=3.5.0
+# RUN wget -q https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop3.tgz && \
+#     tar -xzf spark-${SPARK_VERSION}-bin-hadoop3.tgz -C /opt/ && \
+#     mv /opt/spark-${SPARK_VERSION}-bin-hadoop3 /opt/spark && \
+#     rm spark-${SPARK_VERSION}-bin-hadoop3.tgz
+
+# 4. Instalação de Dependências Python (dbt e requirements)
+USER airflow
+
+COPY requirements.txt /requirements.txt
+# Instalamos o dbt-sqlserver junto com o seu arquivo de requisitos
+RUN pip install --no-cache-dir -r /requirements.txt dbt-sqlserver
+
+
+
+#quando acabar o projeto tirar comentario abaixo:
+# Instalação automática do Spark para que o GitHub/Docker cuidem disso por si
+#ENV SPARK_VERSION=3.5.0
+#RUN wget -q https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop3.tgz && \
+#    tar -xzf spark-${SPARK_VERSION}-bin-hadoop3.tgz -C /opt/ && \
+#    mv /opt/spark-${SPARK_VERSION}-bin-hadoop3 /opt/spark && \
+#    rm spark-${SPARK_VERSION}-bin-hadoop3.tgz
+
+# ... (restante das variáveis de ambiente e dbt)
+
+
+# ---------------------------
+#  dbt
+# ----------------------------
+
+# ---------------------------------------------------------
+# Instalação do Driver ODBC e dbt-sqlserver
+# ---------------------------------------------------------
+USER root
+
+# Instalando dependências e o Driver 17 para Debian 11 (Padrão do Airflow 2.7)
+RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - && \
+    curl https://packages.microsoft.com/config/debian/11/prod.list > /etc/apt/sources.list.d/mssql-release.list && \
+    apt-get update && \
+    ACCEPT_EULA=Y apt-get install -y msodbcsql17 unixodbc-dev && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Voltando para o usuário correto do container Airflow
+USER airflow
+
+# Instalando o dbt
+RUN pip install --no-cache-dir dbt-sqlserver
+
+# ----------------------------
+# TUDO QUE É AIRFLOW (Dependências Python)
+# ... (instalação de dependências e Java)
+# ----------------------------
+USER airflow
+
+COPY requirements.txt /requirements.txt
+RUN pip install --no-cache-dir -r /requirements.txt
+
+
+

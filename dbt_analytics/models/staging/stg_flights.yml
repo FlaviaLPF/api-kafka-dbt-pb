@@ -1,0 +1,37 @@
+version: 2
+
+models:
+  - name: stg_flights
+    description: "Tabela de limpeza da telemetria de voos (OpenSky)"
+    columns:
+      - name: id_surrogate
+        description: "Chave primária da tabela"
+        tests:
+          - unique
+          - not_null
+
+      - name: aircraft_id
+        description: "Código ICAO24 da aeronave"
+        tests:
+          - not_null
+
+      - name: latitude
+        description: "Latitude do voo"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: -90
+              max_value: 90
+
+      - name: longitude
+        description: "Longitude do voo"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: -180
+              max_value: 180
+
+      - name: speed_kmh
+        description: "Velocidade em km/h"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 1300 # Detecta se houve troca de campo por valor inválido

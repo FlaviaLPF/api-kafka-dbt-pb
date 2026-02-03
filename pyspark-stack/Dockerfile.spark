@@ -1,0 +1,28 @@
+FROM apache/spark:3.5.0
+
+USER root
+
+# copiar e instalar dependências Python
+COPY requirements-spark.txt /tmp/requirements-spark.txt
+RUN pip install --no-cache-dir -r /tmp/requirements-spark.txt
+
+# Volte para root temporariamente para instalar o driver USER root 
+USER root
+
+# --- INSTALAÇÃO DO DRIVER JDBC (sem depender de rede) ---
+COPY mssql-jdbc-12.4.2.jre11.jar /opt/spark/jars/
+RUN chown 1001:1001 /opt/spark/jars/mssql-jdbc-12.4.2.jre11.jar
+
+# garantir que exista um usuário com UID 1001 e nome 'flavia'
+RUN if ! getent passwd 1001 >/dev/null 2>&1; then \
+      groupadd -g 1001 flavia || true; \
+      useradd -u 1001 -g 1001 -m -d /home/flavia -s /bin/bash flavia || true; \
+    fi && \
+    mkdir -p /home/flavia && chown -R 1001:1001 /home/flavia /opt/spark
+
+# definir variáveis úteis (opcional, mas ajuda em dev)
+ENV HADOOP_USER_NAME=flavia
+ENV SPARK_DAEMON_JAVA_OPTS="-Duser.name=flavia"
+ENV JAVA_TOOL_OPTIONS="-Duser.name=flavia"
+
+USER 1001

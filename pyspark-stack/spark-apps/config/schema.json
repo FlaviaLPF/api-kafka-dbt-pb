@@ -1,0 +1,19 @@
+{
+  "icao24": "string",
+  "callsign": "string",
+  "origin_country": "string",
+  "time_position": "long",
+  "last_contact": "long",
+  "longitude": "double",
+  "latitude": "double",
+  "baro_altitude": "double",
+  "on_ground": "boolean",
+  "velocity": "double",
+  "heading": "double",
+  "vertical_rate": "double",
+  "sensors": "string",
+  "geo_altitude": "double",
+  "squawk": "string",
+  "spi": "boolean",
+  "position_source": "long"
+}

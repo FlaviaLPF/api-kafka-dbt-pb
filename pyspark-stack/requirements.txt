@@ -1,0 +1,29 @@
+apache-airflow-providers-apache-spark==4.1.1  # For Apache Spark integration
+apache-airflow-providers-common-sql
+
+
+# Kafka
+kafka-python
+
+# HDFS via WebHDFS (para producer Python)
+hdfs
+
+confluent_kafka==2.3.0  # Kafka integration using Confluent client
+
+# HTTP Requests
+charset-normalizer<3       # Compatibilidade com Snowflake e outras libs
+urllib3==1.26.16           # Versão compatível com boto3, botocore e Airflow
+idna==3.4                  # Suporte a nomes de domínio internacionalizados
+certifi==2023.7.22         # Certificados raiz confiáveis para HTTPS
+
+
+pyspark==3.5.0
+#pyspark==3.2.1
+lxml
+requests
+pandas==1.5.3
+pyarrow==10.0.1
+
+dbt-core
+dbt-sqlserver
+

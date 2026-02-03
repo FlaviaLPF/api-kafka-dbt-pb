@@ -1,0 +1,35 @@
+version: 2
+
+models:
+  - name: fct_flights
+    description: |
+      **Tabela Fato de Telemetria de Voos.**
+      Contém métricas de voo integradas com dimensões espaciais e temporais.
+      **Granularidade:** 1 sinal captado por aeronave por timestamp.
+    columns:
+      - name: flight_pk
+        description: "Chave primária única da fato (surrogate key)."
+        tests:
+          - unique
+          - not_null
+
+      - name: aircraft_id
+        description: "Chave estrangeira para dim_aircrafts."
+        tests:
+          - not_null
+
+      - name: airport_code
+        description: "Código do aeroporto identificado via geofencing (pode ser nulo se estiver em trânsito)."
+
+      - name: speed_kmh
+        description: "Velocidade da aeronave no momento do registro."
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 1300
+
+      - name: flight_status
+        description: "Classificação lógica do voo (Cruzeiro, Pouso/Decolagem, Taxiando)."
+        tests:
+          - accepted_values:
+              values: ['Taxiando/Parado', 'Decolagem/Pouso', 'Baixa Altitude (Aproximacao)', 'Voo de Cruzeiro']

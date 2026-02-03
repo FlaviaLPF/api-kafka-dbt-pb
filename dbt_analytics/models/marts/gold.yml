@@ -1,0 +1,59 @@
+version: 2
+
+models:
+  - name: dim_aircrafts
+    description: "Dimensão contendo informações únicas de cada aeronave."
+    columns:
+      - name: aircraft_id
+        tests:
+          - unique
+          - not_null
+
+  - name: dim_airports
+    description: "Dimensão de aeroportos mapeados."
+    columns:
+      - name: airport_code
+        tests:
+          - unique
+          - not_null
+
+  - name: dim_calendar
+    description: "Calendário auxiliar."
+    columns:
+      - name: flight_date
+        tests:
+          - unique
+          - not_null
+
+  - name: fct_flights
+    description: "Tabela Fato de Telemetria de Voos unificada."
+    columns:
+      - name: flight_pk
+        tests:
+          - unique
+          - not_null
+
+      - name: aircraft_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_aircrafts')
+              field: aircraft_id
+
+      - name: airport_code
+        tests:
+          - relationships:
+              to: ref('dim_airports')
+              field: airport_code
+
+      - name: speed_kmh
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 1300
+
+      - name: flight_status
+        description: "Classificação lógica do voo (No solo ou Em voo)."
+        tests:
+          - accepted_values:
+              values: ['No solo', 'Em voo']

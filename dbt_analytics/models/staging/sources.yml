@@ -1,0 +1,8 @@
+version: 2
+
+sources:
+  - name: opensky
+    database: DWFlights
+    schema: raw
+    tables:
+      - name: flights_raw

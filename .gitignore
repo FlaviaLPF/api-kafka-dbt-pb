@@ -1,0 +1,57 @@
+# === AMBIENTE VIRTUAL ===
+venv/
+.venv/
+env/
+bin/
+lib/
+share/
+pyvenv.cfg
+
+# === PYTHON (CACHE E TEMPORÁRIOS) ===
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+
+# === DBT (LOGS E ARTEFATOS) ===
+target/
+dbt_modules/
+dbt_packages/
+logs/
+dbt_project/target/
+dbt_project/dbt_packages/
+dbt_project/logs/
+
+# === DOCKER & IDEs ===
+.docker_temp/
+.vscode/
+.idea/
+.DS_Store
+
+# === SEGURANÇA E SENHAS ===
+.env
+profiles.yml
+*.db
+*.sqlite
+
+# === SPARK & BIG DATA ===
+spark/
+# Descomente a linha abaixo se os JARs forem muito pesados
+# !spark/jars/ 
+
+# === AIRFLOW ===
+airflow/logs/
+airflow/plugins/
+standalone_admin_password.txt
+airflow.cfg
+airflow.db
+
+
+# Ignorar resultados de processamento (dados)
+pyspark-stack/flights_final/
+*.parquet
+*.snappy.parquetpyspark-stack/flights_final/
+*.parquet
