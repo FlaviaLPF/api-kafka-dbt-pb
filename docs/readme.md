@@ -14,7 +14,7 @@
 - [Insights de Negócio](#-insights)
 - [Conclusão e Próximos Passos](#-conclusão-e-próximos-passos)
 
-> [!NOTA:]
+>**NOTA:**
 >Para ver as evidências do pipeline em execução e os Dashboards finais, 
 >acesse: Detalhamento Visual e Artefatos  ![Visualização de Dados](./visualizacao_dados.md)
 
@@ -231,11 +231,11 @@ Para garantir a precisão dos dados, o projeto não utiliza contagens simples de
  * Pico de Tráfego: MAX(unique_aircrafts) por hour_24
 
 ## 🔄 Fluxo de Dados
-1. **Sistema Fonte (API EXTERNA)**
+**1. Sistema Fonte (API EXTERNA)**
 
  * OpenSKy: Coleta de dados via REST API para capturar o estado global (states) das aeronaves na Bounding Box de São Paulo.
 
-2. **Extração (ETL - Extract)**
+**2. Extração (ETL - Extract)**
 
  Ingestão e Mensageria (Real-time Layer):
 
@@ -247,7 +247,7 @@ Para garantir a precisão dos dados, o projeto não utiliza contagens simples de
 
  * Task branch_consumer: BranchOperator para verificar se houve captura de dados antes de subir o cluster Spark, economizando recursos computacionais.
 
-3. **Transformação (ETL - Transform)**
+**3. Transformação (ETL - Transform)**
 
  * A. Processamento Distribuído (Spark)
 
@@ -261,7 +261,7 @@ Para garantir a precisão dos dados, o projeto não utiliza contagens simples de
 
     * dbt test (task_dbt_test): Garante a qualidade (Data Quality) antes do dado chegar ao Power BI.
 
-4. **Carga (ETL - Load)**
+**4. Carga (ETL - Load)**
 
 A carga é realizada em dois momentos cruciais para garantir a disponibilidade do dado:
 
@@ -271,7 +271,7 @@ A carga é realizada em dois momentos cruciais para garantir a disponibilidade d
 
  * Arquivamento (task_archive): O arquivo original é movido para uma zona de "Processados", mantendo o Staging limpo e garantindo a idempotência do pipeline (o dado não será processado duas vezes).
 
-5. **Análise e Consumo**
+**5. Análise e Consumo**
 
 O pipeline processa dados brutos da API OpenSky utilizando scripts Python e Spark para realizar o geofencing (delimitação geográfica) e a limpeza dos dados. O objetivo central é o monitoramento da malha aérea de alta densidade da Grande São Paulo, transformando registros de telemetria bruta em indicadores de performance aeroportuária.
 
@@ -416,6 +416,6 @@ A separação clara entre a **Camada de Dados (SQL/dbt)** e a **Camada Semântic
 
 Atualmente, a dimensão de aeronaves (DIM_AIRCRAFTS) foca na identificação única via ICAO24 e País de Origem. Um roadmap futuro para este projeto inclui o cruzamento com bases externas (como a da ANAC ou OpenSky DB) para enriquecimento de dados com Modelo, Fabricante e Capacidade de Passageiros.
 
-> [!NOTA:]
+>**NOTA:**
 >Para ver as evidências do pipeline em execução e os Dashboards finais, 
 >acesse: Detalhamento Visual e Artefatos  ![Visualização de Dados](./visualizacao_dados.md)

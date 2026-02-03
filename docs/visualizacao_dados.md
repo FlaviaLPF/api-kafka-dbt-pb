@@ -7,7 +7,7 @@ O dado é capturado via API e armazenado inicialmente em formato JSON. Abaixo, u
 
 ![Arquivo flights.json](./screenshots/json.jpg)
 
-> **Exemplo de como ficam os diretórios para gravar o arquivo flights.json (HDFS/Local):**
+>**Exemplo de como ficam os diretórios para gravar o arquivo flights.json (HDFS/Local):**
 > `drwxr-xr-x - airflow supergroup 0 2026-01-29 15:46 /data/flights/raw/dt=2026-01-29`
 > `-rw-r--r-- 1 airflow supergroup 3306 2026-01-29 15:46 /data/flights/raw/dt=2026-01-29/flights.json`
 
@@ -42,7 +42,7 @@ O arquivo json salvo no pipeline possui os campos abaixo:
 +-------+-------------------+---------+-------------------------------------------------------+
 ```
 
->[!NOTA:]
+>**NOTA:**
 >Campo category da API OpenSky: Embora previsto na documentação da OpenSky API (campo 17), 
 >este dado é opcional e não foi fornecido pelos sensores durante a coleta deste dataset. 
 >A análise de perfil de frota foi realizada de forma inferencial através da correlação entre velocity e on_ground.
