@@ -14,7 +14,7 @@
 - [Insights de Negócio](#-insights)
 - [Conclusão e Próximos Passos](#-conclusão-e-próximos-passos)
 
-> [!IMPORTANT]
+> [!NOTA:]
 >Para ver as evidências do pipeline em execução e os Dashboards finais, 
 >acesse: Detalhamento Visual e Artefatos  ![Visualização de Dados](./visualizacao_dados.md)
 
@@ -165,7 +165,7 @@ FCT_FLIGHTS
 ```
 
 ## 📊 Hierarquias
-1. **Hierarquia Temporal (DIM_CALENDAR)**
+**1. Hierarquia Temporal (DIM_CALENDAR)**
 
 Esta estrutura permite que o usuário saia de uma visão anual e chegue até o detalhe da hora exata do voo.
 
@@ -178,7 +178,7 @@ Ano (2026)
                 └── Período do Dia (Manhã, Tarde, Noite)
                      └── Hora (0, 1, 2, ..., 23)
 ```
-2. **Hierarquia Geográfica (DIM_AIRPORTS)**
+**2. Hierarquia Geográfica (DIM_AIRPORTS)**
 
 Essencial para o seu estudo sobre os aeroportos de São Paulo, 
 permitindo agrupar por região ou aeroporto específico.
@@ -191,7 +191,7 @@ Região (Sudeste)
            └── Aeroporto (Guarulhos, Congonhas, Viracopos)
                 └── Código IATA (GRU, CGH, VCP)
 ```
-3. **Hierarquia de Aeronaves (DIM_AIRCRAFTS)**
+**3. Hierarquia de Aeronaves (DIM_AIRCRAFTS)**
 
 Organiza a frota para responder sobre a origem do tráfego aéreo.
 
@@ -203,12 +203,12 @@ Categoria (Nacional / Estrangeiro)
            └── ID da Aeronave (ICAO24)
 ```
 
-4. **Hierarquia de Navegação Analítica (FCT_FLIGHTS)**
+**4. Hierarquia de Navegação Analítica (FCT_FLIGHTS)**
 
 Organiza os dados para identificar em qual fase do voo o sinal foi capturado, permitindo análises de segurança e eficiência em aproximações.
 
 ```T
-Hierarquia de Operação
+Hierarquia de Navegação
 Status do Voo (Em Voo / No Solo)
  └── Comportamento (Cruzeiro, Subida, Descida / Aproximação, Nivelado, Táxi)
       ├── Faixa de Altitude (Baixa, Média, Alta Altitude)

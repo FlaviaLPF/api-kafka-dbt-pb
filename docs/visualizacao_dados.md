@@ -42,11 +42,10 @@ O arquivo json salvo no pipeline possui os campos abaixo:
 +-------+-------------------+---------+-------------------------------------------------------+
 ```
 
-> [!IMPORTANTE]
+>[!NOTA:]
 >Campo category da API OpenSky: Embora previsto na documentação da OpenSky API (campo 17), 
 >este dado é opcional e não foi fornecido pelos sensores durante a coleta deste dataset. 
 >A análise de perfil de frota foi realizada de forma inferencial através da correlação entre velocity e on_ground.
-
 
 Abaixo, é mostrado como é configuração do arquivo JSON (mesmo formato do arquivo json recebido da OPENSKY API):
 ```text
@@ -118,22 +117,22 @@ Nessas condições foram gerados os seguintes dashboards:
 
 ### 💡 Principais Insights de Negócio
 
-1. **Janelas de Pico e Saturação (Análise Temporal)**
+**1. Janelas de Pico e Saturação (Análise Temporal)**
    * **Insights:** O gráfico de "Aeronaves Ativas por hour_24" revela três picos claros de operação: um início de manhã (por volta das 12h-14h UTC), um pico vespertino e um crescimento acentuado à noite (20h-22h).
    * **Valor de Negócio:** Permite prever horários de maior carga de trabalho para equipes de solo e identificar janelas de ociosidade na madrugada (05h-10h UTC), ideais para manutenções programadas.
 
-2. **Eficiência de Geofencing e Distribuição por Hub**
+**2. Eficiência de Geofencing e Distribuição por Hub**
    * **Insights:** Cerca de 50,6% das aeronaves detectadas estão em espaço aéreo geral (N/A), enquanto 24% estão vinculadas a Congonhas (CGH) e 20% a Guarulhos (GRU).
    * **Valor de Negócio:** Valida que o Geofencing está funcionando corretamente. Nota-se que CGH, apesar de ser um aeroporto menor que GRU, possui uma densidade de aeronaves ativas muito alta devido à sua localização central.
 
-3. **Correlação Física: Velocidade vs. Altitude**
+**3. Correlação Física: Velocidade vs. Altitude**
    * **Insights:** O gráfico de dispersão mostra uma correlação positiva clara: quanto maior a altitude, maior a velocidade de cruzeiro.
    * **Valor de Negócio:** Identifica anomalias operacionais. Aeronaves com alta velocidade em baixas altitudes podem indicar procedimentos de aproximação rápida ou necessidade de monitoramento de segurança.
 
-4. **Perfil da Frota e Origem**
+**4. Perfil da Frota e Origem**
    * **Insights:** A operação é massivamente nacional (83,9%). Entretanto, há uma cauda longa de aeronaves estrangeiras (Chile, EUA, Argentina, etc.).
    * **Valor de Negócio:** Demonstra a importância dos hubs paulistas como portões de entrada internacionais e reforça a malha doméstica como motor principal do volume de dados.
 
-5. **Desempenho por Aeroporto (Velocidade Média)**
+**5. Desempenho por Aeroporto (Velocidade Média)**
    * **Insights:** A velocidade média em Congonhas (CGH) é significativamente menor (18 m/s) em comparação a Guarulhos (90 m/s).
    * **Valor de Negócio:** Sugere um numero significativo de aeronaves menores que exigem aproximações mais lentas, e possivelmente, também, de helicópteros e movimentação de solo (táxi).
