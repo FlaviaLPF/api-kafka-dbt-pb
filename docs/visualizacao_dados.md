@@ -3,19 +3,19 @@
 Este documento apresenta as evidências técnicas do pipeline, desde a ingestão do dado bruto até a entrega final no Power BI.
 
 ## 1. Evidência de Ingestão (Bronze)
-O dado é capturado via API e armazenado inicialmente em formato JSON. Abaixo, um exemplo da estrutura bruta persistida nos diretórios de controle (**Raw**, **Staging** e **Processed**):
+O dado é capturado via API e armazenado inicialmente em formato JSON. Abaixo, um exemplo do arquivo json persistido nos diretórios de controle (**Raw**, **Staging** e **Processed**):
 
 ![Arquivo flights.json](./screenshots/json.jpg)
 
-> **Exemplo de persistência no diretório Raw (HDFS/Local):**
+> **Exemplo de como ficam os diretórios para gravar o arquivo flights.json (HDFS/Local):**
 > `drwxr-xr-x - airflow supergroup 0 2026-01-29 15:46 /data/flights/raw/dt=2026-01-29`
 > `-rw-r--r-- 1 airflow supergroup 3306 2026-01-29 15:46 /data/flights/raw/dt=2026-01-29/flights.json`
 
-No ambiente **Staging** e **Processed**, os arquivos são nomeados com timestamp único para garantir a rastreabilidade:  
+No ambiente **Staging** e **Processed**, os arquivos (json) são nomeados com timestamp único para garantir a rastreabilidade:  
 `flights_20260129T154000.json`
 
-### Dicionário de Dados de Entrada (OpenSky State Vectors)
-O pipeline impõe o esquema abaixo para garantir a consistência na transição para a camada Trusted:
+### Layout do Arquivo JSON Salvo no Pipeline
+O arquivo json salvo no pipeline possui os campos abaixo:
 
 ```text
 +-------+-------------------+---------+-------------------------------------------------------+
@@ -42,11 +42,13 @@ O pipeline impõe o esquema abaixo para garantir a consistência na transição 
 +-------+-------------------+---------+-------------------------------------------------------+
 ```
 
-> [!IMPORTANT]
->Nota sobre o campo category: Embora previsto na documentação da OpenSky API (campo 17), 
+> [!IMPORTANTE]
+>Campo category da API OpenSky: Embora previsto na documentação da OpenSky API (campo 17), 
 >este dado é opcional e não foi fornecido pelos sensores durante a coleta deste dataset. 
 >A análise de perfil de frota foi realizada de forma inferencial através da correlação entre velocity e on_ground.
 
+
+Abaixo, é mostrado como é configuração do arquivo JSON (mesmo formato do arquivo json recebido da OPENSKY API):
 ```text
 {
   "time": 1765922995,
@@ -92,7 +94,7 @@ Abaixo, uma amostra dos dados estruturados após o processamento Spark, prontos 
 
 
 ## 3. Modelagem Dimensional (SQL Server / Gold)
-Abaixo, a visualização das tabelas materializadas pelo dbt no SQL Server. Note a separação clara entre Fatos e Dimensões:
+Abaixo, a visualização das tabelas materializadas pelo dbt(Fato e Dimensões) no SQL Server:
 
 ![Dim.Aircrafts](./screenshots/sql-server3.jpg)
 ![Dim.Airports](./screenshots/sql-server4.jpg)
@@ -103,7 +105,8 @@ Abaixo, a visualização das tabelas materializadas pelo dbt no SQL Server. Note
 
 
 ## 4. Dashboards e Insights (Power BI)
-A camada final de consumo, onde o Star Schema permite filtros dinâmicos por país, categoria de aeronave e aeroporto.
+A camada final de consumo, onde o Star Schema permite filtros dinâmicos por país, categoria de aeronave e aeroporto. 
+Nessas condições foram gerados os seguintes dashboards:
 
 ![Dashboard Overview](./screenshots/graf1.jpg)
 ![Dashboard Overview](./screenshots/graf2.jpg)
@@ -133,4 +136,4 @@ A camada final de consumo, onde o Star Schema permite filtros dinâmicos por pa�
 
 5. **Desempenho por Aeroporto (Velocidade Média)**
    * **Insights:** A velocidade média em Congonhas (CGH) é significativamente menor (18 m/s) em comparação a Guarulhos (90 m/s).
-   * **Valor de Negócio:** Reflete as restrições operacionais de CGH, que exige aproximações mais lentas, além da forte presença de helicópteros e movimentação de solo (táxi).
+   * **Valor de Negócio:** Sugere um numero significativo de aeronaves menores que exigem aproximações mais lentas, e possivelmente, também, de helicópteros e movimentação de solo (táxi).

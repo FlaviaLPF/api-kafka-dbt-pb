@@ -3,20 +3,22 @@
 
 ## 📌 Sumário
 - [Sobre o Projeto](#-sobre-o-projeto)
-- [Arquitetura do Sistema](#-arquitetura)
-- [Modelo Dimensional](#modelo-dimensional)
+- [Arquitetura do Sistema](#arquitetura-do-projeto-sistema)
+- [Arquitetura Medallion](#arquitetura-medallion)
+- [Modelo de dados](#modelagem-de-dados)
+- [O DW](#-camada-gold-o-data-warehouse-dw)
+- [Modelagem Dimensional - Star Schema](#-modelo-dimensional-star-schema)
 - [Processos de Negócio](#-processos-de-negócio)
 - [Hierarquia](#-hierarquias)
 - [Fluxo de Dados (ETL)](#-fluxo-de-dados)
 - [Insights de Negócio](#-insights)
-- [Conclusão](#-conclusão)
+- [Conclusão e Próximos Passos](#-conclusão-e-próximos-passos)
 
 > [!IMPORTANT]
 >Para ver as evidências do pipeline em execução e os Dashboards finais, 
 >acesse: Detalhamento Visual e Artefatos  ![Visualização de Dados](./visualizacao_dados.md)
 
 ## 🎯 Sobre o Projeto
-
 Este projeto consiste em um pipeline de dados ponta a ponta para monitoramento e 
 análise do tráfego aéreo na região de São Paulo, utilizando dados reais da API OpenSky Network. 
 O objetivo principal foi transformar dados brutos de telemetria em um Data Warehouse estruturado, permitindo análises complexas sobre comportamento de vôo e ocupação do espaço aéreo.
@@ -51,8 +53,7 @@ Para garantir a escalabilidade e a qualidade das análises, implementei uma arqu
 
 O modelo final permite responder a perguntas críticas como horários de pico de pousos/decolagens,  proporção de aeronaves estrangeiras vs. nacionais e identificação de comportamentos de voo (taxiando, cruzeiro ou aproximação), transformando coordenadas GPS em inteligência operacional.
 
-## Arquitetura 
-
+## Arquitetura do Projeto (Sistema)
 O ecossistema foi construído sobre Docker, utilizando o Docker Compose para orquestrar múltiplos containers. O Apache Airflow atua como o orquestrador central, gerenciando o ciclo de vida dos dados desde a captura via Python Producer até a modelagem final no dbt. A persistência dos dados brutos é feita em HDFS (Apache Spark), garantindo uma estrutura de Data Lakehouse resiliente.
 
 ```T
@@ -63,10 +64,47 @@ O ecossistema foi construído sobre Docker, utilizando o Docker Compose para orq
 [ CAMADA DE ANALYTICS ] -> dbt (Silver/Gold)
 [ CAMADA DE CONSUMO ] -> Power BI (Semantic Layer)
 ```
+## Arquitetura Medallion
+O projeto adota a Arquitetura Medallion, organizando o fluxo de dados em camadas de maturidade:
 
-### Modelo Dimensional
+  * Bronze: Persistência dos dados brutos em HDFS (via Spark) e tabelas auxiliares em SQL Server.
+  * Silver: Processos de limpeza, casting e padronização via dbt Staging.
+  * Gold: Modelagem dimensional (Star Schema) otimizada para consumo em ferramentas de BI.
 
-Arquitetura Medallion:
+## Modelagem de Dados
+
+### 🥇 Camada Gold: O Data Warehouse (DW)
+Nesta etapa, os dados transformados são organizados em um ambiente analítico. O diagrama abaixo representa o fluxo final dentro do DW.
+
+```T
+[ RAW_DATABASE ]
+   +------------------+
+   | flights_raw      |
+   | (Dado Bruto)     |
+   +------------------+
+            |
+            |  dbt run (Staging)
+            v
+    [ ZONA_SILVER ]
+   +------------------+
+   | stg_flights      | 
+   | (View/Limpeza)   | --- Limpeza básica, seleção e
+   +------------------+     casting de tipos (Float/Int).
+            |
+            |  dbt run (Marts) + dbt test
+            v
+    [ ZONA_GOLD ]
+   +------------------+         +-----------------------+
+   | dim_aircrafts    | <-------|                       |
+   | dim_airports     | <-------|      fct_flights      |
+   | dim_calendar     | <-------|  (Star Schema Final)  |
+   +------------------+         +-----------------------+
+          
+    Validação: 7 testes PASS (Unique, Not Null, Accepted Values)
+```
+
+### ⭐ Modelo Dimensional (Star Schema)
+Para otimizar a performance das consultas no Power BI, estruturamos os dados seguindo o modelo Star Schema:
 
 ```t
 DIM_AIRCRAFTS                    DIM_AIRPORTS
@@ -103,42 +141,14 @@ DIM_AIRCRAFTS                    DIM_AIRPORTS
 
  * FCT_FLIGHTS - operações de voos
 
-###  O DW 
-
-```T
-[ RAW_DATABASE ]
-   +------------------+
-   | flights_raw      |
-   | (Dado Bruto)     |
-   +------------------+
-            |
-            |  dbt run (Staging)
-            v
-    [ ZONA_SILVER ]
-   +------------------+
-   | stg_flights      | 
-   | (View/Limpeza)   | --- Limpeza básica, seleção e
-   +------------------+     casting de tipos (Float/Int).
-            |
-            |  dbt run (Marts) + dbt test
-            v
-    [ ZONA_GOLD ]
-   +------------------+         +-----------------------+
-   | dim_aircrafts    | <-------|                       |
-   | dim_airports     | <-------|      fct_flights      |
-   | dim_calendar     | <-------|  (Star Schema Final)  |
-   +------------------+         +-----------------------+
-      
-    
-    Validação: 7 testes PASS (Unique, Not Null, Accepted Values)
-```
 
 ## 💼 Processos de Negócio
 
 O processo de negócio no DW é modelado através de uma tabela fato. 
 
-1️⃣ Processo: FLIGHTS
+**Processo: FLIGHTS**
 
+```Text
 FCT_FLIGHTS
 ├─ Granularidade: 1 snapshot de telemetria por aeronave a cada registro captado.
 ├─ Frequência: Contínua (atualizada via stream Kafka/Spark em tempo real).
@@ -152,10 +162,10 @@ FCT_FLIGHTS
    • Qual o horário de pico de pousos e decolagens durante a semana?
    • Qual a proporção de aeronaves em solo vs. em voo por faixa horária?
    • Como a altitude média varia para voos que cruzam a região de SP?
+```
 
 ## 📊 Hierarquias
-
-1. Hierarquia Temporal (DIM_CALENDAR)
+1. **Hierarquia Temporal (DIM_CALENDAR)**
 
 Esta estrutura permite que o usuário saia de uma visão anual e chegue até o detalhe da hora exata do voo.
 
@@ -168,7 +178,7 @@ Ano (2026)
                 └── Período do Dia (Manhã, Tarde, Noite)
                      └── Hora (0, 1, 2, ..., 23)
 ```
-2. Hierarquia Geográfica (DIM_AIRPORTS)
+2. **Hierarquia Geográfica (DIM_AIRPORTS)**
 
 Essencial para o seu estudo sobre os aeroportos de São Paulo, 
 permitindo agrupar por região ou aeroporto específico.
@@ -181,7 +191,7 @@ Região (Sudeste)
            └── Aeroporto (Guarulhos, Congonhas, Viracopos)
                 └── Código IATA (GRU, CGH, VCP)
 ```
-3. Hierarquia de Aeronaves (DIM_AIRCRAFTS)
+3. **Hierarquia de Aeronaves (DIM_AIRCRAFTS)**
 
 Organiza a frota para responder sobre a origem do tráfego aéreo.
 
@@ -193,7 +203,7 @@ Categoria (Nacional / Estrangeiro)
            └── ID da Aeronave (ICAO24)
 ```
 
-4. Hierarquia de Operação de Voos (FCT_FLIGHTS)
+4. **Hierarquia de Navegação Analítica (FCT_FLIGHTS)**
 
 Organiza os dados para identificar em qual fase do voo o sinal foi capturado, permitindo análises de segurança e eficiência em aproximações.
 
@@ -209,7 +219,7 @@ Status do Voo (Em Voo / No Solo)
  * flight_behavior: Identifica a fase do voo utilizando a lógica de vertical_rate (taxa de subida/descida).
  * altitude_tier e speed_tier: Categorização técnica que transforma dados contínuos (números) em dados categóricos (grupos), facilitando a criação de filtros e dashboards executivos.
 
-Métricas Principais:
+**Métricas Principais:**
 
 Utiliza Cálculos DAX otimizados no POWER BI (Camada semântica).
 
@@ -221,13 +231,11 @@ Para garantir a precisão dos dados, o projeto não utiliza contagens simples de
  * Pico de Tráfego: MAX(unique_aircrafts) por hour_24
 
 ## 🔄 Fluxo de Dados
-
-1. Sistema Fonte (API EXTERNA)
+1. **Sistema Fonte (API EXTERNA)**
 
  * OpenSKy: Coleta de dados via REST API para capturar o estado global (states) das aeronaves na Bounding Box de São Paulo.
 
-
-2. Extração (ETL - Extract)
+2. **Extração (ETL - Extract)**
 
  Ingestão e Mensageria (Real-time Layer):
 
@@ -239,8 +247,7 @@ Para garantir a precisão dos dados, o projeto não utiliza contagens simples de
 
  * Task branch_consumer: BranchOperator para verificar se houve captura de dados antes de subir o cluster Spark, economizando recursos computacionais.
 
-
-3. Transformação (ETL - Transform)
+3. **Transformação (ETL - Transform)**
 
  * A. Processamento Distribuído (Spark)
 
@@ -254,7 +261,7 @@ Para garantir a precisão dos dados, o projeto não utiliza contagens simples de
 
     * dbt test (task_dbt_test): Garante a qualidade (Data Quality) antes do dado chegar ao Power BI.
 
-4. Carga (ETL - Load)
+4. **Carga (ETL - Load)**
 
 A carga é realizada em dois momentos cruciais para garantir a disponibilidade do dado:
 
@@ -264,7 +271,7 @@ A carga é realizada em dois momentos cruciais para garantir a disponibilidade d
 
  * Arquivamento (task_archive): O arquivo original é movido para uma zona de "Processados", mantendo o Staging limpo e garantindo a idempotência do pipeline (o dado não será processado duas vezes).
 
-5. Análise e Consumo
+5. **Análise e Consumo**
 
 O pipeline processa dados brutos da API OpenSky utilizando scripts Python e Spark para realizar o geofencing (delimitação geográfica) e a limpeza dos dados. O objetivo central é o monitoramento da malha aérea de alta densidade da Grande São Paulo, transformando registros de telemetria bruta em indicadores de performance aeroportuária.
 
@@ -274,9 +281,7 @@ O volume significativo de dados classificados como Espaço Aéreo Geral (N/A) re
 
 A análise das velocidades médias no Aeroporto de Congonhas (SBSP) revelou valores significativamente baixos (aprox. 18 m/s). Embora o campo category da API OpenSky não estivesse disponível no dataset para segmentação direta, a baixa velocidade, somada ao perfil operacional de SBSP (maior hub de helicópteros e aviação executiva do Brasil), sugere uma forte presença de aeronaves de pequeno porte e tráfego de solo na amostra coletada.
 
-
-
--> Diagrama Completo do Fluxo:
+**-> Diagrama Completo do Fluxo:**
 
 ```T
 Airflow (Orquestrador Docker)
@@ -298,7 +303,7 @@ Airflow (Orquestrador Docker)
                 [ Camada de Visualização ]
                 (Power BI - Star Schema)
 ```
--> Diagrama detalhado:
+**-> Diagrama detalhado:**
 
 ```T
 [ DIRETÓRIO DE SCHEMAS ]
@@ -348,7 +353,7 @@ Airflow (Orquestrador Docker)
 +-----------------------------------------------------------------------+
 ```
 
--> Manutenção do Pipeline:
+**-> Manutenção do Pipeline:**
 
     Área de Staging(diretório): Implementada para isolar os dados brutos antes da conversão para Parquet.
 
@@ -398,35 +403,19 @@ Airflow (Orquestrador Docker)
       - Materialization         - Relationships              - Analytics
 ```
 
-6. Visualização do Airflow e Containers no Docker
+**6. Visualização do Airflow e Containers no Docker**
 
 ![Airflow](./screenshots/airflow.jpg)
 
 ![Containers-Docker](./screenshots/docker.jpg)
 
-
-📚 Conclusão e Próximos Passos
-
-## 🏁 Conclusão
-
+## 📚 Conclusão e Próximos Passos
 Este projeto demonstra a implementação de uma arquitetura de dados moderna (Modern Data Stack), partindo da ingestão de eventos em tempo real até a entrega de insights estratégicos. 
 
 A separação clara entre a **Camada de Dados (SQL/dbt)** e a **Camada Semântica (Power BI)** permite que o sistema seja escalável, permitindo a adição de novos aeroportos e métricas sem a necessidade de reestruturar todo o pipeline. A utilização de modelagem Dimensional (Star Schema) garante que análises complexas, como o cruzamento de performance técnica com a origem da frota, sejam realizadas com alta performance.
 
 Atualmente, a dimensão de aeronaves (DIM_AIRCRAFTS) foca na identificação única via ICAO24 e País de Origem. Um roadmap futuro para este projeto inclui o cruzamento com bases externas (como a da ANAC ou OpenSky DB) para enriquecimento de dados com Modelo, Fabricante e Capacidade de Passageiros.
 
-
-> [!IMPORTANT]
+> [!NOTA:]
 >Para ver as evidências do pipeline em execução e os Dashboards finais, 
 >acesse: Detalhamento Visual e Artefatos  ![Visualização de Dados](./visualizacao_dados.md)
-
-
-   
-
-
-
-
-
-
-
-
