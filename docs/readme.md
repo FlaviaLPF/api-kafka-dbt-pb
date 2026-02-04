@@ -31,11 +31,11 @@ Lista das ferramentas:
   * Mensageria: Apache Kafka (para o streaming dos dados).
   * HDFS: armazena arquivo json com dados recebidos pelo kafka, o mesmo arquivo tratado salvo em parquet e arquivo json com o schema de dados.
   * Spark cluster : deploy-mode client (master + workers) integrado ao Airflow.
-  * Data Warehouse: SQL Server.
+  * Data Warehouse: SQL Server (Instancia Local)
   * Transformação: programas pyspark e  dbt core (Data Build Tool) com modelos incrementais e Joins geográficos.
   * BI: Power BI (Análise de performance e horários de pico).
-  * Airflow:  orchestrador de todo pipeline.
-  * Docker: Todo o projeto foi containerizado utilizando Docker.  
+  * Airflow:  orchestrador dos serviços de BIG DATA (KAFKA,SPARK,AIRFLOW)
+  * Docker: projeto foi containerizado utilizando Docker.  
 
 Para garantir a escalabilidade e a qualidade das análises, implementei uma arquitetura de medalhão (Bronze, Silver e Gold) utilizando o dbt (data build tool):
 
@@ -51,14 +51,14 @@ Para garantir a escalabilidade e a qualidade das análises, implementei uma arqu
 O modelo final permite responder a perguntas críticas como horários de pico de pousos/decolagens, proporção de aeronaves estrangeiras vs. nacionais e identificação de comportamentos de voo (taxiando, cruzeiro ou aproximação), transformando coordenadas GPS em inteligência operacional.
 
 ## Arquitetura do Projeto (Sistema)
-O ecossistema foi construído sobre Docker, utilizando o Docker Compose para orquestrar múltiplos containers. O Apache Airflow atua como o orquestrador central, gerenciando o ciclo de vida dos dados desde a captura via Python Producer até a modelagem final no dbt. A persistência dos dados brutos é feita em HDFS (Apache Spark), garantindo uma estrutura de Data Lakehouse resiliente.
+O ecossistema foi construído utilizando Docker Compose para orquestração dos serviços de Big Data (Kafka, Spark, Airflow). A transformação e modelagem dos dados são centralizadas no dbt, que gerencia as camadas analíticas e garante a qualidade via testes automatizados. A persistência final utiliza uma instância local de SQL Server, simulando um ambiente híbrido onde o processamento conteinerizado se comunica com um banco de dados externo ao cluster Docker."
 
 ```
 [ CAMADA DE INFRA ] -> Docker & Docker Compose (Isolamento)
 [ CAMADA DE CONTROLE ] -> Apache Airflow (DAG Orchestration)
 [ CAMADA DE INGESTÃO ] -> Python (Producer/Consumer) + Kafka (Stream)
 [ CAMADA DE STORAGE ] -> Volumes do Docker: HDFS (Parquet,JSON) e host local:  para logs e zonas "processed" e "staging" do pipeline.
-                         SQL Server (Bronze (tabela FLIGHTS_RAW), silver (VIEW STG_FLIGHTS) e Gold(tabela fato e dimensões))
+                         SQL Server LOCAL INSTANCE (Bronze (tabela FLIGHTS_RAW), silver (VIEW STG_FLIGHTS) e Gold(tabela fato e dimensões))
 [ CAMADA DE ANALYTICS ] -> dbt (Silver/Gold)
 [ CAMADA DE CONSUMO ] -> Power BI (Semantic Layer)
 ```
