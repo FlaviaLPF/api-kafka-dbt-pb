@@ -11,7 +11,7 @@
 - [Processos de Negócio](#-processos-de-negócio)
 - [Hierarquia](#-hierarquias)
 - [Fluxo de Dados (ETL)](#-fluxo-de-dados)
-- [Insights de Negócio](#-insights)
+- [Insights de Negócio](./docs/visualizacao_dados.md#dashboards-e-insights)
 - [Conclusão e Próximos Passos](#-conclusão-e-próximos-passos)
 
 >**NOTA:**
