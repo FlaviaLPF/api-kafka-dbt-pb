@@ -49,7 +49,7 @@ def consume_flights(**context):
         # Loop para ler mensagens do Kafka
         for i, message in enumerate(consumer):
             try:
-                # Mantemos o log para você conferir se os dados bateram
+                # log para conferir se os dados batem
                 logger.info(f"Mensagem recebida #{i+1}: {message.value}")
                 messages_list.append(message.value) 
                 count += 1
@@ -57,7 +57,7 @@ def consume_flights(**context):
                 logger.error(f"Erro ao processar mensagem #{i+1}: {e}")
                 raise
         
-        # --- SALVANDO O ARQUIVO JSON (O SEU SEGURO) ---
+        # --- SALVANDO O ARQUIVO JSON  ---
         if count > 0:
             # Pega o 'ts_nodash' do Airflow (ex: 20260117T180000)
             # Se rodar manual no terminal, ele gera um timestamp atual

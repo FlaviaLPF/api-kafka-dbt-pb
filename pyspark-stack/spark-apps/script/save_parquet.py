@@ -51,11 +51,11 @@ def main():
         .getOrCreate()
 
     try:
-        # 1. VOLTAMOS PARA A LEITURA COMO TEXTO (Mais seguro para listas de listas)
+        
         # O Spark lê o conteúdo do arquivo inteiro como uma string na coluna 'value'
         df_text = spark.read.text(INPUT_PATH)
 
-        # 2. CONVERSÃO DO JSON (Usando a sua lógica original que funciona)
+        # 2. CONVERSÃO DO JSON
         # Como o arquivo é "[ [...], [...] ]", o schema é Array de Arrays de Strings
         df_json = df_text.select(
             from_json(col("value"), ArrayType(ArrayType(StringType()))).alias("rows")

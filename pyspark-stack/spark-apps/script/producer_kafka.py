@@ -53,9 +53,7 @@ def is_near_airport(lat, lon, airport, max_distance=0.2):
 
 def fetch_opensky_data():
     logging.info(f"Coletando dados OpenSky | dt={EXECUTION_DATE}")
-
-    #response = requests.get(OPEN_SKY_URL, timeout=10)
-    
+   
     try:
         
         response = requests.get(OPEN_SKY_URL, timeout=10)        

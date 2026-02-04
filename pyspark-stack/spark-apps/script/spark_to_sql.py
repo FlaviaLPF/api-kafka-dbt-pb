@@ -11,8 +11,6 @@ from pyspark.sql import SparkSession
 LOG_FILE = "/opt/spark-apps/logs/parquet_to_sql.log"
 os.makedirs(os.path.dirname(LOG_FILE), exist_ok=True)
 
-
- #Logger nomeado para este processo específico
 logger = logging.getLogger("flights_parquet_save_sql")
 logger.setLevel(logging.INFO)
 
@@ -30,7 +28,7 @@ if not logger.handlers:
 ##logging.basicConfig(filename=LOG_FILE, level=logging.INFO, 
 #                    format="%(asctime)s %(levelname)s: %(message)s")
 
-# Busca a conexão que você criou na UI do Airflow
+# Busca a conexão na UI do Airflow
 conn = BaseHook.get_connection("mssql_default")
 
 def main():
